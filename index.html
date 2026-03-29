@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Medical Link Board v1.0.1</title>
+    <title>Medical Link Board v1.0.2</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -43,7 +43,7 @@
     <header class="bg-slate-800 text-white p-4 pt-10 sticky top-0 z-[100] shadow-md">
         <div class="flex justify-between items-start mb-2">
             <div>
-                <h1 class="font-bold text-lg italic tracking-tight text-white">Medical Link Board <span class="text-[10px] bg-blue-600 px-1.5 py-0.5 rounded ml-1 not-italic">v1.0.1</span></h1>
+                <h1 class="font-bold text-lg italic tracking-tight text-white">Medical Link Board <span class="text-[10px] bg-blue-600 px-1.5 py-0.5 rounded ml-1 not-italic">v1.0.2</span></h1>
                 <p class="text-[9px] flex items-center text-slate-400">
                     <span class="w-2 h-2 rounded-full mr-1" :class="isSyncing ? 'bg-green-400 animate-pulse' : 'bg-gray-500'"></span>
                     通信中
@@ -66,7 +66,7 @@
         <div v-for="note in filteredNotes" :key="note.id" 
              :class="['p-3 rounded-xl shadow min-h-[340px] flex flex-col relative border-2 transition', 
                      note.category?.colorClass || 'bg-white', note.category?.id === 'emergency' ? 'emergency-pulse' : '',
-                     note.targetStaffId === myStaffId ? 'border-blue-500 ring-2 ring-blue-200' : 'border-transparent']"
+                     String(note.targetStaffId) === String(myStaffId) ? 'border-blue-500 ring-2 ring-blue-200' : 'border-transparent']"
              :style="{ opacity: note.isCompleted ? 0.6 : 1 }">
             
             <div class="absolute top-2 right-2 flex flex-col items-end">
@@ -108,8 +108,8 @@
 
     <div v-if="showArchive" class="fixed inset-0 bg-slate-900/95 z-[500] flex flex-col p-4">
         <div class="flex justify-between items-center mb-4 text-white"><h2 class="font-bold text-lg">アーカイブ</h2><button @click="showArchive = false" class="text-4xl">&times;</button></div>
-        <div class="mb-4">
-            <input v-model="archiveSearchQuery" type="text" placeholder="過去の投稿を検索..." class="w-full bg-slate-800 border border-slate-700 text-white p-3 rounded-xl outline-none focus:ring-2 ring-blue-500 text-xs shadow-inner">
+        <div class="mb-4 text-slate-800 font-bold">
+            <input v-model="archiveSearchQuery" type="text" placeholder="過去の投稿を検索..." class="w-full bg-white border border-slate-700 p-3 rounded-xl outline-none focus:ring-2 ring-blue-500 text-xs shadow-inner">
         </div>
         <div class="flex-1 overflow-y-auto space-y-3 pr-1 no-scrollbar text-slate-800">
             <div v-for="note in searchedArchivedNotes" :key="note.id" class="bg-white p-4 rounded-2xl shadow-lg border-l-4 border-slate-400">
@@ -199,15 +199,10 @@
                         <input v-model="newAdminPass" type="text" placeholder="新パスワードを入力" class="flex-1 border p-2 rounded-xl text-xs outline-none bg-gray-50 focus:bg-white shadow-inner">
                         <button @click="updatePass" class="bg-red-500 text-white px-4 rounded-xl text-xs font-bold active:bg-red-700 transition shadow-md">更新</button>
                     </div>
-                    <p class="text-[8px] text-gray-400 mt-1 italic">※実行にはマスターコードが必要です</p>
                 </section>
                 <button @click="showAdminModal = false" class="w-full py-4 text-gray-400 text-[10px] font-bold mt-4">閉じる</button>
             </div>
         </div>
-    </div>
-
-    <div v-if="previewImage" @click="previewImage = null" class="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-4">
-        <img :src="previewImage" class="max-w-full max-h-full rounded shadow-2xl">
     </div>
 
     <div v-if="showPostModal" class="fixed inset-0 bg-slate-900/95 z-[400] flex flex-col p-4">
@@ -218,7 +213,7 @@
                 <div class="flex overflow-x-auto space-x-2 no-scrollbar py-1">
                     <button v-for="dept in sortedDepartments" :key="dept.id" 
                         @click="handlePostDeptSelect(dept.id)"
-                        :class="['px-4 py-2 rounded-xl text-xs whitespace-nowrap border transition shadow-sm', postDeptId === dept.id ? 'bg-slate-800 text-white border-slate-800 font-bold scale-105' : 'bg-gray-50 text-gray-400 border-gray-100']">
+                        :class="['px-4 py-2 rounded-xl text-xs whitespace-nowrap border transition shadow-sm', String(postDeptId) === String(dept.id) ? 'bg-slate-800 text-white border-slate-800 font-bold scale-105' : 'bg-gray-50 text-gray-400 border-gray-100']">
                         {{ dept.name }}
                     </button>
                 </div>
@@ -256,6 +251,10 @@
                 掲示板に貼り付ける
             </button>
         </div>
+    </div>
+
+    <div v-if="previewImage" @click="previewImage = null" class="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-4">
+        <img :src="previewImage" class="max-w-full max-h-full rounded shadow-2xl">
     </div>
 
     <div class="fixed bottom-8 right-6 z-[300]"><button @click="openPostModal" class="w-16 h-16 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center text-4xl active:scale-90 transition">+</button></div>
@@ -313,9 +312,9 @@ createApp({
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             departments.value = data.departments || [];
-                            staffList.value = data.staffList || [];
+                            staffList.value = (data.staffList || []).map(s => ({ ...s, id: String(s.id), deptId: String(s.deptId) }));
                             adminSettings.value.pass = data.adminPass || "1234";
-                            if (!currentDeptId.value && departments.value.length > 0) currentDeptId.value = departments.value[0].id;
+                            if (!currentDeptId.value && departments.value.length > 0) currentDeptId.value = String(departments.value[0].id);
                         }
                     });
                 }
@@ -332,36 +331,43 @@ createApp({
 
         const filteredStaffListForPost = computed(() => {
             if (!postDeptId.value) return staffList.value;
-            return staffList.value.filter(s => s.deptId === postDeptId.value);
+            return staffList.value.filter(s => String(s.deptId) === String(postDeptId.value));
         });
 
         const isPostValid = computed(() => {
             if (!newNote.value.content || !postDeptId.value || !newNote.value.targetStaffId) return false;
-            const target = staffList.value.find(s => s.id === newNote.value.targetStaffId);
-            return target && target.deptId === postDeptId.value;
+            const target = staffList.value.find(s => String(s.id) === String(newNote.value.targetStaffId));
+            return target && String(target.deptId) === String(postDeptId.value);
         });
 
         const syncMaster = async () => {
             await window.fs.setDoc(window.fs.doc(window.db, "settings", "master"), {
-                departments: departments.value,
-                staffList: staffList.value,
+                departments: departments.value.map(d => ({...d, id: String(d.id)})),
+                staffList: staffList.value.map(s => ({...s, id: String(s.id), deptId: String(s.deptId)})),
                 adminPass: adminSettings.value.pass
             }, { merge: true });
         };
 
-        const updatePass = async () => {
-            if (!newAdminPass.value || newAdminPass.value.trim() === "") {
-                alert("新しいパスワードを入力してください");
-                return;
+        const saveStaff = async () => {
+            if (!editStaff.value.name || !editStaff.value.deptId) return alert("入力不備があります");
+            if (editStaff.value.id) {
+                const idx = staffList.value.findIndex(s => String(s.id) === String(editStaff.value.id));
+                staffList.value[idx] = { ...editStaff.value, id: String(editStaff.value.id), deptId: String(editStaff.value.deptId) };
+            } else {
+                staffList.value.push({ id: String(Date.now()), name: editStaff.value.name, deptId: String(editStaff.value.deptId), img: editStaff.value.img });
             }
-            const inputMaster = prompt("実行するにはマスターコードを入力してください");
+            await syncMaster();
+            resetEditStaff();
+        };
+
+        const updatePass = async () => {
+            if (!newAdminPass.value) return alert("新パスワードを入力してください");
+            const inputMaster = prompt("マスターコードを入力");
             if (inputMaster === MASTER_CODE) {
                 adminSettings.value.pass = newAdminPass.value;
                 await syncMaster();
-                alert("パスワードを「" + newAdminPass.value + "」に更新しました");
+                alert("更新しました");
                 newAdminPass.value = "";
-            } else if (inputMaster !== null) {
-                alert("マスターコードが違います");
             }
         };
 
@@ -373,8 +379,8 @@ createApp({
             await window.fs.addDoc(window.fs.collection(window.db, "notes"), {
                 content: newNote.value.content,
                 category: JSON.parse(JSON.stringify(newNote.value.category)),
-                departmentId: postDeptId.value,
-                targetStaffId: newNote.value.targetStaffId,
+                departmentId: String(postDeptId.value),
+                targetStaffId: String(newNote.value.targetStaffId),
                 photo: newNote.value.photoPreview || null,
                 appendix: "",
                 isCompleted: false,
@@ -388,18 +394,12 @@ createApp({
 
         const toggleComplete = async (note) => { 
             const newStatus = !note.isCompleted;
-            await window.fs.updateDoc(window.fs.doc(window.db, "notes", note.id), { 
-                isCompleted: newStatus,
-                completedAt: newStatus ? window.fs.serverTimestamp() : null 
-            }); 
+            await window.fs.updateDoc(window.fs.doc(window.db, "notes", note.id), { isCompleted: newStatus, completedAt: newStatus ? window.fs.serverTimestamp() : null }); 
         };
 
         const updateAppendix = async (note) => { 
             if (note.appendix === note.tempAppendix) return;
-            await window.fs.updateDoc(window.fs.doc(window.db, "notes", note.id), { 
-                appendix: note.tempAppendix,
-                repliedAt: window.fs.serverTimestamp() 
-            }); 
+            await window.fs.updateDoc(window.fs.doc(window.db, "notes", note.id), { appendix: note.tempAppendix, repliedAt: window.fs.serverTimestamp() }); 
         };
 
         const archiveNote = async (id) => { if (confirm("アーカイブしますか？")) await window.fs.updateDoc(window.fs.doc(window.db, "notes", id), { isArchived: true }); };
@@ -407,42 +407,29 @@ createApp({
         const deletePermanently = async (id) => { if (confirm("完全に削除しますか？")) await window.fs.deleteDoc(window.fs.doc(window.db, "notes", id)); };
         const openAdmin = () => { showAdminModal.value = true; isAdminAuthenticated.value = false; adminPassInput.value = ""; };
         const checkPass = () => { if (adminPassInput.value === adminSettings.value.pass) isAdminAuthenticated.value = true; else alert("認証失敗"); };
-        
-        const saveStaff = async () => {
-            if (!editStaff.value.name || !editStaff.value.deptId) return alert("入力不備があります");
-            if (editStaff.value.id) {
-                const idx = staffList.value.findIndex(s => s.id === editStaff.value.id);
-                staffList.value[idx] = { ...editStaff.value };
-            } else {
-                staffList.value.push({ id: Date.now(), ...editStaff.value });
-            }
-            await syncMaster();
-            resetEditStaff();
-        };
-
-        const removeStaff = async (id) => { if(confirm("削除しますか？")) { staffList.value = staffList.value.filter(s=>s.id!==id); await syncMaster(); } };
-        const addDept = async () => { if(newDeptName.value) { departments.value.push({id: Date.now(), name: newDeptName.value}); await syncMaster(); newDeptName.value = ""; } };
-        const removeDept = async (id) => { if(confirm("削除しますか？")) { departments.value = departments.value.filter(d=>d.id!==id); await syncMaster(); } };
+        const removeStaff = async (id) => { if(confirm("削除しますか？")) { staffList.value = staffList.value.filter(s=>String(s.id)!==String(id)); await syncMaster(); } };
+        const addDept = async () => { if(newDeptName.value) { departments.value.push({id: String(Date.now()), name: newDeptName.value}); await syncMaster(); newDeptName.value = ""; } };
+        const removeDept = async (id) => { if(confirm("削除しますか？")) { departments.value = departments.value.filter(d=>String(d.id)!==String(id)); await syncMaster(); } };
         const resetEditStaff = () => { editStaff.value = { id: null, name: "", deptId: null, img: "" }; };
         const startEditStaff = (s) => { editStaff.value = { ...s }; };
         const openPostModal = () => { postDeptId.value = currentDeptId.value; newNote.value = { category: categories[0], content: "", targetStaffId: null, photoPreview: null }; showPostModal.value = true; };
         const handlePostDeptSelect = (deptId) => { postDeptId.value = deptId; newNote.value.targetStaffId = null; };
-        const handleStaffSelect = () => { const staff = staffList.value.find(s => s.id === newNote.value.targetStaffId); if (staff && staff.deptId) postDeptId.value = staff.deptId; };
+        const handleStaffSelect = () => { const staff = staffList.value.find(s => String(s.id) === String(newNote.value.targetStaffId)); if (staff && staff.deptId) postDeptId.value = staff.deptId; };
 
         return {
             isSyncing, currentDeptId, postDeptId, departments, staffList, notes, showPostModal, showAdminModal, showArchive, previewImage,
             newNote, categories, isAdminAuthenticated, adminPassInput, editStaff, newDeptName, myStaffId, newAdminPass, archiveSearchQuery,
             sortedDepartments, filteredStaffListForPost, isPostValid,
-            filteredNotes: computed(() => notes.value.filter(n => n.departmentId === currentDeptId.value && !n.isArchived)),
+            filteredNotes: computed(() => notes.value.filter(n => String(n.departmentId) === String(currentDeptId.value) && !n.isArchived)),
             searchedArchivedNotes: computed(() => {
                 let archived = notes.value.filter(n => n.isArchived);
                 if (!archiveSearchQuery.value) return archived;
                 const q = archiveSearchQuery.value.toLowerCase();
                 return archived.filter(n => n.content.toLowerCase().includes(q));
             }),
-            getStaffImage: (id) => staffList.value.find(s => s.id === id)?.img || "https://i.pravatar.cc/150?u=unknown",
-            getStaffName: (id) => staffList.value.find(s => s.id === id)?.name || "不明",
-            getDeptName: (id) => departments.value.find(d => d.id === id)?.name || "未所属",
+            getStaffImage: (id) => staffList.value.find(s => String(s.id) === String(id))?.img || "https://i.pravatar.cc/150?u=unknown",
+            getStaffName: (id) => staffList.value.find(s => String(s.id) === String(id))?.name || "不明",
+            getDeptName: (id) => departments.value.find(d => String(d.id) === String(id))?.name || "未所属",
             saveNote, toggleComplete, archiveNote, restoreNote, deletePermanently, updateAppendix, saveStaff, removeStaff, addDept, removeDept, startEditStaff, resetEditStaff, openAdmin, checkPass, openPostModal, handlePostDeptSelect, handleStaffSelect, updatePass,
             formatDate: (ts) => ts ? new Date(ts.seconds * 1000).toLocaleString('ja-JP', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '',
             onFileChange: (e, type) => {
